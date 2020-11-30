@@ -1,3 +1,4 @@
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -30,6 +31,12 @@ class _MyHomePageState extends State<MyHomePage> {
   String _dynamicLink = "null";
 
   @override
+  void initState() {
+    super.initState();
+    initDynamicLinks();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -50,5 +57,31 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
     );
+  }
+
+  void initDynamicLinks() async {
+    FirebaseDynamicLinks.instance.onLink(onSuccess: (PendingDynamicLinkData dynamicLink) async {
+      final Uri deepLink = dynamicLink?.link;
+
+      if (deepLink != null) {
+        await Future.delayed(Duration(seconds: 3));
+        setState(() {
+          _dynamicLink = deepLink.toString();
+        });
+      }
+    }, onError: (OnLinkErrorException e) async {
+      print('onLinkError');
+      print(e.message);
+    });
+
+    final PendingDynamicLinkData data = await FirebaseDynamicLinks.instance.getInitialLink();
+    final Uri deepLink = data?.link;
+
+    if (deepLink != null) {
+      await Future.delayed(Duration(seconds: 3));
+      setState(() {
+        _dynamicLink = deepLink.toString();
+      });
+    }
   }
 }
